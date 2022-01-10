@@ -1,4 +1,9 @@
-use std::{collections::HashMap, env, fs, process};
+use std::{
+    collections::HashMap,
+    env, fs,
+    path::{Path, PathBuf},
+    process,
+};
 
 use anyhow::Result;
 use chrono::{Datelike, Local};
@@ -24,6 +29,17 @@ gflags::define! {
     -v, --version = false
 }
 
+gflags::define! {
+    /// set module name, and will create a dir
+    -n, --name: &str
+}
+
+fn get_output(name: &str, dir: &Path) -> PathBuf {
+    let mut buf = PathBuf::from(dir);
+    buf.push(name);
+    buf
+}
+
 fn main() -> Result<()> {
     let _ = gflags::parse();
 
@@ -37,7 +53,6 @@ fn main() -> Result<()> {
     }
 
     let mut reg = Handlebars::new();
-
     let mut templates = HashMap::new();
     templates.insert("package.json", include_str!("./templates/package.json"));
     templates.insert("LICENSE", include_str!("./templates/LICENSE"));
@@ -48,9 +63,6 @@ fn main() -> Result<()> {
         reg.register_template_string(name, tpl)
             .expect(&format!("parse template error of {}", name));
     });
-
-    let pwd = env::current_dir()?;
-    let basename = pwd.file_name().unwrap().to_str().unwrap();
 
     let private_pkg = if PRIVATE.is_present() {
         PRIVATE.flag
@@ -66,10 +78,24 @@ fn main() -> Result<()> {
 
     let this_year = Local::now().year();
 
+    let pwd = env::current_dir()?;
+    let basename = pwd.file_name().unwrap().to_str().unwrap();
+    let project_name = if NAME.is_present() {
+        NAME.flag
+    } else {
+        basename
+    };
+
+    let mut output_dir = PathBuf::from(&pwd);
+    if NAME.is_present() {
+        output_dir.push(NAME.flag);
+        fs::create_dir(output_dir.as_path())?;
+    }
+
     let model = serde_json::json!({
         "author": author,
         "thisYear": this_year,
-        "projectName": basename,
+        "projectName": project_name,
         "private": private_pkg,
         "nonPrivate": !private_pkg,
     });
@@ -83,7 +109,8 @@ fn main() -> Result<()> {
             .render(name, &model)
             .expect(&format!("failed to render data for template '{}'", name));
 
-        fs::write(name, contents).expect(&format!("failed to create file, path: {}", name));
+        let output_path = get_output(name, &output_dir.as_path());
+        fs::write(output_path, contents).expect(&format!("failed to create file, path: {}", name));
     });
 
     Ok(())
