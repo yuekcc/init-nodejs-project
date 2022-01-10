@@ -1,4 +1,4 @@
-# init-nodejs-project
+# init-nodejs-project（inp）
 
 一个简单的工具，用于快速创建 node.js 项目。内置了 eslint、prettier、editorconfig 配置。
 
