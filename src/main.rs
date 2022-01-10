@@ -10,31 +10,31 @@ use chrono::{Datelike, Local};
 use handlebars::Handlebars;
 
 gflags::define! {
-    /// set the module in private
+    /// 设置为私有模块
     -p, --private = false
 }
 
 gflags::define! {
-    /// set module author
+    /// 设置模块名称，并创建同名目录
+    -n, --name: &str
+}
+
+gflags::define! {
+    /// 设置模块作者
     -a, --author: &str
 }
 
 gflags::define! {
-    /// show help
+    /// 显示帮助信息
     -h, --help = false
 }
 
 gflags::define! {
-    /// show version
+    /// 显示版本号
     -v, --version = false
 }
 
-gflags::define! {
-    /// set module name, and will create a dir
-    -n, --name: &str
-}
-
-fn get_output(name: &str, dir: &Path) -> PathBuf {
+fn mk_output_path(name: &str, dir: &Path) -> PathBuf {
     let mut buf = PathBuf::from(dir);
     buf.push(name);
     buf
@@ -52,32 +52,37 @@ fn main() -> Result<()> {
         process::exit(0);
     }
 
-    let mut reg = Handlebars::new();
-    let mut templates = HashMap::new();
-    templates.insert("package.json", include_str!("./templates/package.json"));
-    templates.insert("LICENSE", include_str!("./templates/LICENSE"));
-    templates.insert(".editorconfig", include_str!("./templates/.editorconfig"));
-    templates.insert(".gitignore", include_str!("./templates/.gitignore"));
+    let mut tpl_registry = Handlebars::new();
+    let mut tpl_table = HashMap::new();
+    tpl_table.insert("package.json", include_str!("./templates/package.json"));
+    tpl_table.insert("LICENSE", include_str!("./templates/LICENSE"));
+    tpl_table.insert(".editorconfig", include_str!("./templates/.editorconfig"));
+    tpl_table.insert(".gitignore", include_str!("./templates/.gitignore"));
 
-    templates.iter().for_each(|(name, tpl)| {
-        reg.register_template_string(name, tpl)
+    tpl_table.iter().for_each(|(name, tpl)| {
+        tpl_registry
+            .register_template_string(name, tpl)
             .expect(&format!("parse template error of {}", name));
     });
 
-    let private_pkg = if PRIVATE.is_present() {
+    // 是否私有模块
+    let is_private_pkg = if PRIVATE.is_present() {
         PRIVATE.flag
     } else {
         false
     };
 
+    // 作者
     let author = if AUTHOR.is_present() {
         AUTHOR.flag.to_string()
     } else {
         env::var("INIT_NODEJS_PROJECT_AUTHOR").unwrap_or_else(|_| "yuekcc".to_string())
     };
 
+    // LICENSE 声明年份
     let this_year = Local::now().year();
 
+    // 项目名
     let pwd = env::current_dir()?;
     let basename = pwd.file_name().unwrap().to_str().unwrap();
     let project_name = if NAME.is_present() {
@@ -92,24 +97,25 @@ fn main() -> Result<()> {
         fs::create_dir(output_dir.as_path())?;
     }
 
+    // 模板数据
     let model = serde_json::json!({
         "author": author,
-        "thisYear": this_year,
+        "nonPrivate": !is_private_pkg,
+        "private": is_private_pkg,
         "projectName": project_name,
-        "private": private_pkg,
-        "nonPrivate": !private_pkg,
+        "thisYear": this_year,
     });
 
-    templates.into_keys().for_each(|name| {
-        if private_pkg && name == "LICENSE" {
+    tpl_table.into_keys().for_each(|name| {
+        if is_private_pkg && name == "LICENSE" {
             return;
         }
 
-        let contents = reg
+        let contents = tpl_registry
             .render(name, &model)
             .expect(&format!("failed to render data for template '{}'", name));
 
-        let output_path = get_output(name, &output_dir.as_path());
+        let output_path = mk_output_path(name, &output_dir.as_path());
         fs::write(output_path, contents).expect(&format!("failed to create file, path: {}", name));
     });
 
