@@ -4,7 +4,28 @@ use anyhow::Result;
 use chrono::{Datelike, Local};
 use handlebars::Handlebars;
 
+gflags::define! {
+    /// set the module in private
+    -p, --private = false
+}
+
+gflags::define! {
+    /// set module author
+    -a, --author: &str
+}
+
+gflags::define! {
+    /// show help
+    -h, --help = false
+}
+
 fn main() -> Result<()> {
+    let _ = gflags::parse();
+
+    if HELP.flag {
+        gflags::print_help_and_exit(0)
+    }
+
     let mut reg = Handlebars::new();
 
     let mut templates = HashMap::new();
@@ -20,9 +41,20 @@ fn main() -> Result<()> {
 
     let pwd = env::current_dir()?;
     let basename = pwd.file_name().unwrap().to_str().unwrap();
-    let private_pkg = false;
+
+    let private_pkg = if PRIVATE.is_present() {
+        PRIVATE.flag
+    } else {
+        false
+    };
+
+    let author = if AUTHOR.is_present() {
+        AUTHOR.flag.to_string()
+    } else {
+        env::var("INIT_NODEJS_PROJECT_AUTHOR").unwrap_or_else(|_| "yuekcc".to_string())
+    };
+
     let this_year = Local::now().year();
-    let author = env::var("INIT_NODEJS_PROJECT_AUTHOR").unwrap_or_else(|_| "yuekcc".to_string());
 
     let model = serde_json::json!({
         "author": author,
