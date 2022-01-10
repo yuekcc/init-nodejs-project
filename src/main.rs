@@ -1,4 +1,4 @@
-use std::{collections::HashMap, env, fs};
+use std::{collections::HashMap, env, fs, process};
 
 use anyhow::Result;
 use chrono::{Datelike, Local};
@@ -19,11 +19,21 @@ gflags::define! {
     -h, --help = false
 }
 
+gflags::define! {
+    /// show version
+    -v, --version = false
+}
+
 fn main() -> Result<()> {
     let _ = gflags::parse();
 
     if HELP.flag {
         gflags::print_help_and_exit(0)
+    }
+
+    if VERSION.flag {
+        println!("{}-{}", env!("CARGO_PKG_VERSION"), env!("GIT_HASH"));
+        process::exit(0);
     }
 
     let mut reg = Handlebars::new();
