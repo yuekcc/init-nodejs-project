@@ -76,7 +76,7 @@ fn main() -> Result<()> {
     let author = if AUTHOR.is_present() {
         AUTHOR.flag.to_string()
     } else {
-        env::var("INIT_NODEJS_PROJECT_AUTHOR").unwrap_or_else(|_| "yuekcc".to_string())
+        env::var("INP_AUTHOR").unwrap_or_else(|_| "no_name".to_string())
     };
 
     // LICENSE 声明年份

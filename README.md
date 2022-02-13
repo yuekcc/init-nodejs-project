@@ -23,7 +23,7 @@ npm i
 
 ## 设置
 
-可以在环境变量中增加 `INIT_NODEJS_PROJECT_AUTHOR` 来指定模块作者。
+可以在环境变量中增加 `INP_AUTHOR` 来指定模块作者。
 
 ## License
 
