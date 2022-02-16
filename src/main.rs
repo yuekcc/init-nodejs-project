@@ -54,10 +54,10 @@ fn main() -> Result<()> {
 
     let mut tpl_registry = Handlebars::new();
     let mut tpl_table = HashMap::new();
-    tpl_table.insert("package.json", include_str!("./templates/package.json"));
-    tpl_table.insert("LICENSE", include_str!("./templates/LICENSE"));
-    tpl_table.insert(".editorconfig", include_str!("./templates/.editorconfig"));
-    tpl_table.insert(".gitignore", include_str!("./templates/.gitignore"));
+    tpl_table.insert("package.json", include_str!("./templates/package.json.hbs"));
+    tpl_table.insert("LICENSE", include_str!("./templates/LICENSE.hbs"));
+    tpl_table.insert(".editorconfig", include_str!("./templates/.editorconfig.hbs"));
+    tpl_table.insert(".gitignore", include_str!("./templates/.gitignore.hbs"));
 
     tpl_table.iter().for_each(|(name, tpl)| {
         tpl_registry
@@ -100,7 +100,6 @@ fn main() -> Result<()> {
     // 模板数据
     let model = serde_json::json!({
         "author": author,
-        "nonPrivate": !is_private_pkg,
         "private": is_private_pkg,
         "projectName": project_name,
         "thisYear": this_year,
