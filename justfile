@@ -1,7 +1,6 @@
 release:
     cargo build --release
-    test -f target/release/init-nodejs-project.exe && strip target/release/init-nodejs-project.exe
-    test -f target/release/init-nodejs-project && strip target/release/init-nodejs-project
-
+    find target/release -type f -name init-nodejs-project -exec strip {} +;
+    find target/release -type f -name init-nodejs-project.exe -exec strip {} +;
 build:
     cargo build
