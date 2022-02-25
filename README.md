@@ -39,6 +39,14 @@ $ npm i
 
 可以在环境变量中增加 `INP_AUTHOR` 来指定模块作者。
 
+## 构建
+
+需要 rust 1.59
+
+```sh
+just release # cargo build --release
+```
+
 ## License
 
 [MIT](LICENSE)
