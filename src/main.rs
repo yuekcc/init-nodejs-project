@@ -1,11 +1,11 @@
 use std::{
     collections::HashMap,
-    env, fs,
+    env,
+    fs,
     path::{Path, PathBuf},
     process,
 };
 
-use anyhow::Result;
 use chrono::{Datelike, Local};
 use handlebars::Handlebars;
 
@@ -40,7 +40,7 @@ fn mk_output_path(name: &str, dir: &Path) -> PathBuf {
     buf
 }
 
-fn main() -> Result<()> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let _ = gflags::parse();
 
     if HELP.flag {
@@ -54,9 +54,15 @@ fn main() -> Result<()> {
 
     let mut tpl_registry = Handlebars::new();
     let mut tpl_table = HashMap::new();
-    tpl_table.insert(".editorconfig", include_str!("./templates/.editorconfig.hbs"));
+    tpl_table.insert(
+        ".editorconfig",
+        include_str!("./templates/.editorconfig.hbs"),
+    );
     tpl_table.insert(".gitignore", include_str!("./templates/.gitignore.hbs"));
-    tpl_table.insert("jsconfig.json", include_str!("./templates/jsconfig.json.hbs"));
+    tpl_table.insert(
+        "jsconfig.json",
+        include_str!("./templates/jsconfig.json.hbs"),
+    );
     tpl_table.insert("LICENSE", include_str!("./templates/LICENSE.hbs"));
     tpl_table.insert("package.json", include_str!("./templates/package.json.hbs"));
 
