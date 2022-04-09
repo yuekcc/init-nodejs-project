@@ -1,16 +1,17 @@
 [package]
 name = "init-nodejs-project"
-version = "0.3.0"
+version = "0.4.0"
 edition = "2021"
+rust-version = "1.59"
 
 [profile.release]
 lto = true
 panic = 'abort'
-opt-level = 's'
+opt-level = 2
 strip = true
 
 [dependencies]
-chrono = "0.4"
+time = { version = "0.3", features = ["std"] }
 gflags = "0.3"
-handlebars = "4.2"
-serde_json = "1.0"
+handlebars = "4"
+serde_json = "1"

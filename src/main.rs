@@ -1,13 +1,12 @@
 use std::{
     collections::HashMap,
-    env,
-    fs,
+    env, fs,
     path::{Path, PathBuf},
     process,
 };
 
-use chrono::{Datelike, Local};
 use handlebars::Handlebars;
+use time;
 
 gflags::define! {
     /// 设置为私有模块
@@ -83,11 +82,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let author = if AUTHOR.is_present() {
         AUTHOR.flag.to_string()
     } else {
-        env::var("INP_AUTHOR").unwrap_or_else(|_| "no_name".to_string())
+        env::var("INP_AUTHOR").unwrap_or("no_name".into())
     };
 
     // LICENSE 声明年份
-    let this_year = Local::now().year();
+    let this_year = time::OffsetDateTime::now_utc().year();
 
     // 项目名
     let pwd = env::current_dir()?;
