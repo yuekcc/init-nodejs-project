@@ -6,21 +6,21 @@
 
 ```sh
 # 显示命令行参数
-$ init-nodejs-project.exe --help
-    -a, --author
-            设置模块作者
+$ init-nodejs-project.exe -h
+init-nodejs-project 0.5.0-7930e41
 
-    -h, --help
-            显示帮助信息
+USAGE:
+    init-nodejs-project.exe [OPTIONS] [NAME]
 
-    -n, --name
-            设置模块名称，并创建同名目录
+ARGS:
+    <NAME>    Set project name (and create project folder). If not parent, use working dir name
+              as project name
 
-    -p, --private
-            设置为私有模块
-
-    -v, --version
-            显示版本号
+OPTIONS:
+    -a <AUTHOR>        Set author name [default: no_name]
+    -h, --help         Print help information
+    -p, --private      Set project as PRIVATE
+    -V, --version      Print version information
 
 # 创建项目目录（通过 init-nodejs-project -n myproject 可以自动创建目录）
 $ mkdir myproject
@@ -35,16 +35,12 @@ $ npm i
 # 项目完成初始化
 ```
 
-## 设置
-
-可以在环境变量中增加 `INP_AUTHOR` 来指定模块作者。
-
 ## 构建
 
 需要 rust 1.59
 
 ```sh
-just release # cargo build --release
+just release # 或 cargo build --release
 ```
 
 ## License
