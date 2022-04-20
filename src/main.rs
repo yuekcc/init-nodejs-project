@@ -55,7 +55,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     });
 
     // LICENSE 声明年份
-    let this_year = time::OffsetDateTime::now_utc().year();
+    let this_year = time::OffsetDateTime::now_local()?.year();
 
     // 项目名
     let pwd = env::current_dir()?;
