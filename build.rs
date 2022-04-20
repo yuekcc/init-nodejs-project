@@ -6,5 +6,10 @@ fn main() {
         .output()
         .unwrap();
     let version = String::from_utf8(git_output.stdout).unwrap();
-    println!("cargo:rustc-env=GIT_HASH={}", version);
+
+    println!(
+        "cargo:rustc-env=GIT_HASH={}-{}",
+        env!("CARGO_PKG_VERSION"),
+        version
+    );
 }

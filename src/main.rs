@@ -2,35 +2,27 @@ use std::{
     collections::HashMap,
     env, fs,
     path::{Path, PathBuf},
-    process,
 };
 
+use clap::Parser;
 use handlebars::Handlebars;
 use time;
 
-gflags::define! {
-    /// 设置为私有模块
-    -p, --private = false
-}
+#[derive(Parser)]
+#[clap(version = env!("GIT_HASH"))]
+struct Cli {
+    /// Set project name (and create project folder).
+    /// If not parent, use working dir name as project name.
+    #[clap()]
+    pub name: Option<String>,
 
-gflags::define! {
-    /// 设置模块名称，并创建同名目录
-    -n, --name: &str
-}
+    /// Set project as PRIVATE
+    #[clap(short = 'p', long = "private")]
+    pub is_private: bool,
 
-gflags::define! {
-    /// 设置模块作者
-    -a, --author: &str
-}
-
-gflags::define! {
-    /// 显示帮助信息
-    -h, --help = false
-}
-
-gflags::define! {
-    /// 显示版本号
-    -v, --version = false
+    /// Set author name
+    #[clap(short = 'a', default_value = "no_name")]
+    pub author: String,
 }
 
 fn mk_output_path(name: &str, dir: &Path) -> PathBuf {
@@ -40,16 +32,7 @@ fn mk_output_path(name: &str, dir: &Path) -> PathBuf {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let _ = gflags::parse();
-
-    if HELP.flag {
-        gflags::print_help_and_exit(0)
-    }
-
-    if VERSION.flag {
-        println!("{}-{}", env!("CARGO_PKG_VERSION"), env!("GIT_HASH"));
-        process::exit(0);
-    }
+    let cli = Cli::parse();
 
     let mut tpl_registry = Handlebars::new();
     let mut tpl_table = HashMap::new();
@@ -71,48 +54,37 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .expect(&format!("parse template error of {}", name));
     });
 
-    // 是否私有模块
-    let is_private_pkg = if PRIVATE.is_present() {
-        PRIVATE.flag
-    } else {
-        false
-    };
-
-    // 作者
-    let author = if AUTHOR.is_present() {
-        AUTHOR.flag.to_string()
-    } else {
-        env::var("INP_AUTHOR").unwrap_or("no_name".into())
-    };
-
     // LICENSE 声明年份
     let this_year = time::OffsetDateTime::now_utc().year();
 
     // 项目名
     let pwd = env::current_dir()?;
-    let basename = pwd.file_name().unwrap().to_str().unwrap();
-    let project_name = if NAME.is_present() {
-        NAME.flag
+    let basename = pwd.file_name().unwrap().to_str().unwrap().to_string();
+
+    let mut should_create_project_dir = false;
+    let project_name = if cli.name.is_some() {
+        should_create_project_dir = true;
+        cli.name.unwrap()
     } else {
         basename
     };
 
     let mut output_dir = PathBuf::from(&pwd);
-    if NAME.is_present() {
-        output_dir.push(NAME.flag);
+    if should_create_project_dir {
+        output_dir.push(project_name.clone());
         fs::create_dir(output_dir.as_path())?;
     }
 
     // 模板数据
     let model = serde_json::json!({
-        "author": author,
-        "private": is_private_pkg,
-        "projectName": project_name,
+        "author": cli.author.clone(),
+        "private": cli.is_private,
+        "projectName": project_name.clone(),
         "thisYear": this_year,
     });
 
     tpl_table.into_keys().for_each(|name| {
-        if is_private_pkg && name == "LICENSE" {
+        if cli.is_private && name == "LICENSE" {
             return;
         }
 
