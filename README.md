@@ -1,4 +1,4 @@
-# init-nodejs-project (inp)
+# init-nodejs-project
 
 快速创建 node.js 初始项目，并设置 eslint、prettier、editorconfig、typescript。
 
