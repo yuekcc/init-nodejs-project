@@ -22,11 +22,12 @@ OPTIONS:
     -p, --private      Set project as PRIVATE
     -V, --version      Print version information
 
-# 创建项目目录（通过 init-nodejs-project -n myproject 可以自动创建目录）
+# 创建项目目录
 $ mkdir myproject
 $ cd myproject
 
 # 用默认设置初始化项目
+# 通过 init-nodejs-project myproject 可以自动创建目录
 $ init-nodejs-project 
 
 # 安装依赖
