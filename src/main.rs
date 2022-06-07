@@ -2,27 +2,30 @@ use std::{
     collections::HashMap,
     env, fs,
     path::{Path, PathBuf},
+    process,
 };
 
-use clap::Parser;
 use handlebars::Handlebars;
-use time;
 
-#[derive(Parser)]
-#[clap(version = env!("GIT_HASH"))]
+const HELP: &str = "
+
+USAGE:
+  init-nodejs-project [OPTIONS] [PROJECT_NAME]
+
+OPTIONS:
+  -h, --help            Prints help information
+  -p, --private         Set project as PRIVATE
+  -a, --author NAME     Set author name
+
+ARGS:
+  [PROJECT_NAME]        Set project name (and create project folder). 
+                        If not parent, use working dir name as project name.
+";
+
 struct Cli {
-    /// Set project name (and create project folder).
-    /// If not parent, use working dir name as project name.
-    #[clap()]
-    pub name: Option<String>,
-
-    /// Set project as PRIVATE
-    #[clap(short = 'p', long = "private")]
-    pub is_private: bool,
-
-    /// Set author name
-    #[clap(short = 'a', default_value = "no_name")]
-    pub author: String,
+    name: Option<String>,
+    is_private: bool,
+    author: String,
 }
 
 fn mk_output_path(name: &str, dir: &Path) -> PathBuf {
@@ -31,8 +34,46 @@ fn mk_output_path(name: &str, dir: &Path) -> PathBuf {
     buf
 }
 
+fn print_version() {
+    print!("init-nodejs-project {}", env!("GIT_HASH"));
+}
+
+fn print_help() {
+    print!("{}", HELP);
+}
+
+fn parse_cli() -> Result<Cli, Box<dyn std::error::Error>> {
+    let mut args = pico_args::Arguments::from_env();
+
+    if args.contains(["-h", "--help"]) {
+        print_version();
+        print_help();
+        process::exit(0);
+    }
+
+    if args.contains(["-v", "--version"]) {
+        print_version();
+        process::exit(0);
+    }
+
+    let mut cli = Cli {
+        name: None,
+        is_private: args.contains(["-p", "--private"]),
+        author: args
+            .value_from_str(["-a", "--author"])
+            .unwrap_or_else(|_| "no_name".to_string()),
+    };
+
+    let remaining = args.finish();
+    if !remaining.is_empty() {
+        cli.name = Some(remaining[0].to_str().unwrap().to_string())
+    }
+
+    Ok(cli)
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let cli = Cli::parse();
+    let cli = parse_cli()?;
 
     let mut tpl_registry = Handlebars::new();
     let mut tpl_table = HashMap::new();
@@ -51,7 +92,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     tpl_table.iter().for_each(|(name, tpl)| {
         tpl_registry
             .register_template_string(name, tpl)
-            .expect(&format!("parse template error of {}", name));
+            .unwrap_or_else(|_| panic!("parse template error of {}", name));
     });
 
     // LICENSE 声明年份
@@ -77,9 +118,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 模板数据
     let model = serde_json::json!({
-        "author": cli.author.clone(),
+        "author": cli.author,
         "private": cli.is_private,
-        "projectName": project_name.clone(),
+        "projectName": project_name,
         "thisYear": this_year,
     });
 
@@ -90,10 +131,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         let contents = tpl_registry
             .render(name, &model)
-            .expect(&format!("failed to render data for template '{}'", name));
+            .unwrap_or_else(|_| panic!("failed to render data for template '{}'", name));
 
-        let output_path = mk_output_path(name, &output_dir.as_path());
-        fs::write(output_path, contents).expect(&format!("failed to create file, path: {}", name));
+        let output_path = mk_output_path(name, output_dir.as_path());
+        fs::write(output_path, contents)
+            .unwrap_or_else(|_| panic!("failed to create file, path: {}", name));
     });
 
     Ok(())
