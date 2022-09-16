@@ -77,17 +77,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut tpl_registry = Handlebars::new();
     let mut tpl_table = HashMap::new();
-    tpl_table.insert(
-        ".editorconfig",
-        include_str!("./templates/.editorconfig.hbs"),
-    );
+    tpl_table.insert(".editorconfig", include_str!("./templates/.editorconfig.hbs"));
     tpl_table.insert(".gitignore", include_str!("./templates/.gitignore.hbs"));
-    tpl_table.insert(
-        "jsconfig.json",
-        include_str!("./templates/jsconfig.json.hbs"),
-    );
+    tpl_table.insert("jsconfig.json", include_str!("./templates/jsconfig.json.hbs"));
     tpl_table.insert("LICENSE", include_str!("./templates/LICENSE.hbs"));
     tpl_table.insert("package.json", include_str!("./templates/package.json.hbs"));
+    tpl_table.insert(".npmrc", include_str!("./templates/.npmrc.hbs"));
 
     tpl_table.iter().for_each(|(name, tpl)| {
         tpl_registry
@@ -134,8 +129,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .unwrap_or_else(|_| panic!("failed to render data for template '{}'", name));
 
         let output_path = mk_output_path(name, output_dir.as_path());
-        fs::write(output_path, contents)
-            .unwrap_or_else(|_| panic!("failed to create file, path: {}", name));
+        fs::write(output_path, contents).unwrap_or_else(|_| panic!("failed to create file, path: {}", name));
     });
 
     Ok(())
