@@ -81,7 +81,7 @@ dependencies = [
 
 [[package]]
 name = "init-nodejs-project"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "handlebars",
  "pico-args",
