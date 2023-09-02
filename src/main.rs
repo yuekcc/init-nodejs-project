@@ -16,6 +16,7 @@ OPTIONS:
   -h, --help            Prints help information
   -p, --private         Set project as PRIVATE
   -a, --author NAME     Set author name
+      --vue             Setup Vue and Vite
 
 ARGS:
   [PROJECT_NAME]        Set project name (and create project folder). 
@@ -26,6 +27,7 @@ struct Cli {
     name: Option<String>,
     is_private: bool,
     author: String,
+    with_vue: bool,
 }
 
 fn mk_output_path(name: &str, dir: &Path) -> PathBuf {
@@ -59,6 +61,7 @@ fn parse_cli() -> Result<Cli, Box<dyn std::error::Error>> {
     let mut cli = Cli {
         name: None,
         is_private: args.contains(["-p", "--private"]),
+        with_vue: args.contains("--vue"),
         author: args
             .value_from_str(["-a", "--author"])
             .unwrap_or_else(|_| "no_name".to_string()),
@@ -77,12 +80,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut tpl_registry = Handlebars::new();
     let mut tpl_table = HashMap::new();
+    tpl_table.insert(".npmrc", include_str!("./templates/.npmrc.hbs"));
     tpl_table.insert(".editorconfig", include_str!("./templates/.editorconfig.hbs"));
     tpl_table.insert(".gitignore", include_str!("./templates/.gitignore.hbs"));
     tpl_table.insert("jsconfig.json", include_str!("./templates/jsconfig.json.hbs"));
     tpl_table.insert("LICENSE", include_str!("./templates/LICENSE.hbs"));
     tpl_table.insert("package.json", include_str!("./templates/package.json.hbs"));
-    tpl_table.insert(".npmrc", include_str!("./templates/.npmrc.hbs"));
+    tpl_table.insert("vite.config.js", include_str!("./templates/vite.config.js.hbs"));
 
     tpl_table.iter().for_each(|(name, tpl)| {
         tpl_registry
@@ -115,12 +119,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let model = serde_json::json!({
         "author": cli.author,
         "private": cli.is_private,
+        "withVue": cli.with_vue,
         "projectName": project_name,
         "thisYear": this_year,
     });
 
     tpl_table.into_keys().for_each(|name| {
         if cli.is_private && name == "LICENSE" {
+            return;
+        }
+
+        if !cli.with_vue && name == "vite.config.js" {
             return;
         }
 

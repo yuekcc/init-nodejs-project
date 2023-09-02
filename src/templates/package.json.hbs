@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    {{#if withVue}}
+    "dev": "vite",
+    {{/if}}
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "{{author}}",
@@ -14,7 +17,7 @@
   "prettier": {
     "arrowParens": "avoid",
     "endOfLine": "auto",
-    "printWidth": 120,
+    "printWidth": 160,
     "quoteProps": "consistent",
     "semi": true,
     "singleQuote": true,
@@ -37,13 +40,22 @@
     ],
     "extends": [
       "eslint:recommended",
+      {{#if withVue}}
+      "plugin:vue/vue3-recommended",
+      {{/if}}
       "plugin:prettier/recommended"
     ]
   },
   "devDependencies": {
-    "eslint": "^8.0.0",
-    "eslint-config-prettier": "^8.0.0",
-    "eslint-plugin-prettier": "^4.0.0",
-    "prettier": "^2.0.0"
+    "eslint": "^8.48.0",
+    {{#if withVue}}
+    "vue": "^3.3.0",
+    "vite": "^4.4.0",
+    "@vitejs/plugin-vue": "^4.3.0",
+    "eslint-plugin-vue": "^9.17.0",
+    {{/if}}
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "prettier": "^3.0.0"
   }
 }
