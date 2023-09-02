@@ -10,17 +10,18 @@ $ init-nodejs-project.exe -h
 init-nodejs-project 0.5.0-7930e41
 
 USAGE:
-    init-nodejs-project.exe [OPTIONS] [NAME]
-
-ARGS:
-    <NAME>    Set project name (and create project folder). If not parent, use working dir name
-              as project name
+  init-nodejs-project [OPTIONS] [PROJECT_NAME]
 
 OPTIONS:
-    -a <AUTHOR>        Set author name [default: no_name]
-    -h, --help         Print help information
-    -p, --private      Set project as PRIVATE
-    -V, --version      Print version information
+  -h, --help            Prints help information
+  -p, --private         Set project as PRIVATE
+  -a, --author NAME     Set author name
+      --vue             Setup Vue and Vite
+
+ARGS:
+  [PROJECT_NAME]        Set project name (and create project folder). 
+                        If not parent, use working dir name as project name.
+
 
 # 创建项目目录
 $ mkdir myproject
