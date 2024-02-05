@@ -87,6 +87,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     tpl_table.insert("LICENSE", include_str!("./templates/LICENSE.hbs"));
     tpl_table.insert("package.json", include_str!("./templates/package.json.hbs"));
     tpl_table.insert("vite.config.js", include_str!("./templates/vite.config.js.hbs"));
+    tpl_table.insert("index.html", include_str!("./templates/index.html.hbs"));
 
     tpl_table.iter().for_each(|(name, tpl)| {
         tpl_registry
@@ -130,6 +131,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
 
         if !cli.with_vue && name == "vite.config.js" {
+            return;
+        }
+
+        if !cli.with_vue && name == "index.html" {
             return;
         }
 
