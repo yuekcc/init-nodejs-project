@@ -26,6 +26,10 @@
     },
 
   },
+  {{#if withVue}}
+  "include": ["src/**/*", "src/**/*.d.ts", "src/**/*.vue"],
+  {{else}}
   "include": ["src/**/*"],
+  {{/if}}
   "exclude": ["node_modules", "dist"]
 }
