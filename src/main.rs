@@ -146,5 +146,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         fs::write(output_path, contents).unwrap_or_else(|_| panic!("failed to create file, path: {}", name));
     });
 
+    // 创建 src 目录
+    output_dir.push("src");
+    fs::create_dir(output_dir.as_path())?;
+
     Ok(())
 }

@@ -18,7 +18,11 @@
 
     "target": "ES2022",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    {{#if withVue}}
+    "types": ["@types/node", "vite/client"],
+    {{else}}
     "types": ["@types/node"],
+    {{/if}}
 
     "baseUrl": ".",
     "paths": {
