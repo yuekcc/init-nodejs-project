@@ -33,12 +33,12 @@
       "mocha": true
     },
     "parserOptions": {
-      "sourceType": "module"
       {{#if withVue}}
       "ecmaFeatures": {
         "jsx": true
-      }
+      },
       {{/if}}
+      "sourceType": "module"
     },
     "plugins": [
       "prettier"
